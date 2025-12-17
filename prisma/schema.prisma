@@ -1,0 +1,389 @@
+// Prisma schema for Asset Management System
+// Using SQLite for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums (represented as String in SQLite)
+// AssetCategory: IT, Academic, Hospital, Infrastructure
+// AssetStatus: Active, In-Repair, Idle, Condemned, Disposed, Under-Maintenance
+// UserRole: Super Admin, Asset Manager, Department Admin, Auditor, Technician, User
+
+model User {
+  id            String   @id @default(cuid())
+  employeeId    String   @unique
+  firstName     String
+  lastName      String
+  email         String   @unique
+  password      String?  // Hashed password for authentication
+  phone         String?
+  role          String   @default("User") // Super Admin, College Admin, Hospital Admin, Dept Head, Asset Manager, User
+  departmentId  String?
+  collegeId     String?
+  hospitalId    String?
+  locationId    String?
+  designation   String?
+  avatar        String?
+  isActive      Boolean  @default(true)
+  permissions   String?  // JSON string
+  lastLogin     DateTime?
+  joinDate      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  department    Department? @relation(fields: [departmentId], references: [id])
+  college       College?    @relation(fields: [collegeId], references: [id])
+  hospital      Hospital?   @relation(fields: [hospitalId], references: [id])
+  location      Location?   @relation(fields: [locationId], references: [id])
+  assignedAssets Asset[]    @relation("AssignedUser")
+  createdAssets  Asset[]    @relation("CreatedBy")
+  reportedMaintenance MaintenanceRecord[] @relation("ReportedBy")
+  assignedMaintenance MaintenanceRecord[] @relation("AssignedTo")
+  audits        AssetAudit[]
+  headOfDepartments Department[] @relation("DepartmentHead")
+  headOfColleges    College[]    @relation("CollegeHead")
+  headOfHospitals   Hospital[]   @relation("HospitalHead")
+}
+
+// College model for educational institutions
+model College {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  shortName   String?
+  headId      String?
+  locationId  String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  head        User?       @relation("CollegeHead", fields: [headId], references: [id])
+  location    Location?   @relation(fields: [locationId], references: [id])
+  departments Department[]
+  users       User[]
+}
+
+// Hospital model for medical facilities
+model Hospital {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  shortName   String?
+  headId      String?
+  locationId  String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  head        User?       @relation("HospitalHead", fields: [headId], references: [id])
+  location    Location?   @relation(fields: [locationId], references: [id])
+  departments Department[]
+  users       User[]
+}
+
+model Department {
+  id                 String   @id @default(cuid())
+  name               String
+  code               String   @unique
+  type               String   @default("Academic") // Academic, Hospital, NonTeaching
+  headId             String?
+  collegeId          String?
+  hospitalId         String?
+  locationId         String?
+  parentDepartmentId String?
+  budget             Float    @default(0)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  head              User?       @relation("DepartmentHead", fields: [headId], references: [id])
+  college           College?    @relation(fields: [collegeId], references: [id])
+  hospital          Hospital?   @relation(fields: [hospitalId], references: [id])
+  location          Location?   @relation(fields: [locationId], references: [id])
+  parentDepartment  Department? @relation("SubDepartments", fields: [parentDepartmentId], references: [id])
+  subDepartments    Department[] @relation("SubDepartments")
+  users             User[]
+  assets            Asset[]
+  audits            AssetAudit[]
+  fromTransfers     AssetTransfer[] @relation("FromDepartment")
+  toTransfers       AssetTransfer[] @relation("ToDepartment")
+}
+
+model Location {
+  id             String   @id @default(cuid())
+  name           String
+  type           String   // Campus, Building, Floor, Room, Zone
+  parentId       String?
+  code           String   @unique
+  address        String?
+  gpsLat         Float?
+  gpsLng         Float?
+  capacity       Int?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  parent         Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children       Location[] @relation("LocationHierarchy")
+  assets         Asset[]
+  users          User[]
+  departments    Department[]
+  colleges       College[]
+  hospitals      Hospital[]
+  audits         AssetAudit[]
+  fromTransfers  AssetTransfer[] @relation("FromLocation")
+  toTransfers    AssetTransfer[] @relation("ToLocation")
+}
+
+model Vendor {
+  id            String   @id @default(cuid())
+  name          String
+  code          String   @unique
+  type          String   // Supplier, Service Provider, Both
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  gstNumber     String?
+  panNumber     String?
+  rating        Float    @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  assets        Asset[]
+  contracts     Contract[]
+  maintenance   MaintenanceRecord[]
+}
+
+model Asset {
+  id                String   @id @default(cuid())
+  assetId           String   @unique
+  name              String
+  description       String?
+  category          String   // IT, Academic, Hospital, Infrastructure
+  subCategory       String?
+  assetType         String?
+  make              String?
+  model             String?
+  serialNumber      String?
+  tagType           String?  // Barcode, QR, RFID
+  tagId             String?
+  status            String   @default("Active") // AssetStatus
+  condition         String   @default("Good") // AssetCondition
+  purchaseDate      DateTime?
+  purchasePrice     Float    @default(0)
+  currentValue      Float    @default(0)
+  warrantyStartDate DateTime?
+  warrantyEndDate   DateTime?
+  depreciationMethod String?  // SLM, WDV
+  depreciationRate  Float    @default(0)
+  usefulLife        Int      @default(5)
+  salvageValue      Float    @default(0)
+  locationId        String?
+  departmentId      String?
+  assignedToId      String?
+  vendorId          String?
+  purchaseOrderId   String?
+  specifications    String?  // JSON string
+  images            String?  // JSON array
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdById       String?
+
+  // Relations
+  location          Location?   @relation(fields: [locationId], references: [id])
+  department        Department? @relation(fields: [departmentId], references: [id])
+  assignedTo        User?       @relation("AssignedUser", fields: [assignedToId], references: [id])
+  vendor            Vendor?     @relation(fields: [vendorId], references: [id])
+  createdBy         User?       @relation("CreatedBy", fields: [createdById], references: [id])
+  maintenance       MaintenanceRecord[]
+  transfers         AssetTransfer[]
+  contracts         ContractAsset[]
+
+  // Indexes for query optimization
+  @@index([category])
+  @@index([status])
+  @@index([departmentId])
+  @@index([locationId])
+  @@index([createdAt])
+}
+
+model Contract {
+  id                  String   @id @default(cuid())
+  contractNumber      String   @unique
+  type                String   // AMC, CMC, Warranty
+  vendorId            String
+  startDate           DateTime
+  endDate             DateTime
+  value               Float    @default(0)
+  terms               String?
+  status              String   @default("Active") // Active, Expired, Pending-Renewal
+  renewalReminderDays Int      @default(30)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  vendor              Vendor   @relation(fields: [vendorId], references: [id])
+  assets              ContractAsset[]
+}
+
+// Many-to-many relation for Contract and Asset
+model ContractAsset {
+  id         String   @id @default(cuid())
+  contractId String
+  assetId    String
+
+  contract   Contract @relation(fields: [contractId], references: [id])
+  asset      Asset    @relation(fields: [assetId], references: [id])
+
+  @@unique([contractId, assetId])
+}
+
+model MaintenanceRecord {
+  id            String   @id @default(cuid())
+  ticketNumber  String   @unique
+  assetId       String
+  type          String   // Preventive, Breakdown, Corrective, Predictive
+  status        String   @default("Scheduled") // Scheduled, In-Progress, Completed, Overdue, Cancelled
+  priority      String   @default("Medium") // Low, Medium, High, Critical
+  description   String?
+  reportedById  String?
+  reportedDate  DateTime @default(now())
+  assignedToId  String?
+  scheduledDate DateTime?
+  completedDate DateTime?
+  resolution    String?
+  cost          Float    @default(0)
+  downtime      Float    @default(0) // hours
+  vendorId      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  reportedBy    User?    @relation("ReportedBy", fields: [reportedById], references: [id])
+  assignedTo    User?    @relation("AssignedTo", fields: [assignedToId], references: [id])
+  vendor        Vendor?  @relation(fields: [vendorId], references: [id])
+  spareParts    SparePart[]
+}
+
+model SparePart {
+  id                  String   @id @default(cuid())
+  maintenanceRecordId String
+  name                String
+  partNumber          String?
+  quantity            Int      @default(1)
+  unitCost            Float    @default(0)
+  totalCost           Float    @default(0)
+
+  maintenanceRecord   MaintenanceRecord @relation(fields: [maintenanceRecordId], references: [id])
+}
+
+model AssetTransfer {
+  id               String   @id @default(cuid())
+  assetId          String
+  fromLocationId   String?
+  toLocationId     String?
+  fromDepartmentId String?
+  toDepartmentId   String?
+  transferType     String   @default("Permanent") // Permanent, Temporary
+  reason           String?
+  requestedById    String?
+  requestedDate    DateTime @default(now())
+  approvalStatus   String   @default("Pending") // Pending, Approved, Rejected, Escalated
+  approvedById     String?
+  approvedDate     DateTime?
+  transferDate     DateTime?
+  remarks          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  asset            Asset       @relation(fields: [assetId], references: [id])
+  fromLocation     Location?   @relation("FromLocation", fields: [fromLocationId], references: [id])
+  toLocation       Location?   @relation("ToLocation", fields: [toLocationId], references: [id])
+  fromDepartment   Department? @relation("FromDepartment", fields: [fromDepartmentId], references: [id])
+  toDepartment     Department? @relation("ToDepartment", fields: [toDepartmentId], references: [id])
+}
+
+model AssetAudit {
+  id               String   @id @default(cuid())
+  auditNumber      String   @unique
+  name             String
+  type             String   // Annual, Quarterly, Monthly, Ad-hoc
+  status           String   @default("Planned") // Planned, In-Progress, Completed, Pending-Review
+  locationId       String?
+  departmentId     String?
+  plannedStartDate DateTime
+  plannedEndDate   DateTime
+  actualStartDate  DateTime?
+  actualEndDate    DateTime?
+  auditorId        String?
+  totalAssets      Int      @default(0)
+  verifiedAssets   Int      @default(0)
+  discrepancies    Int      @default(0)
+  remarks          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  location         Location?   @relation(fields: [locationId], references: [id])
+  department       Department? @relation(fields: [departmentId], references: [id])
+  auditor          User?       @relation(fields: [auditorId], references: [id])
+}
+
+model PurchaseOrder {
+  id               String   @id @default(cuid())
+  poNumber         String   @unique
+  vendorId         String
+  orderDate        DateTime @default(now())
+  expectedDelivery DateTime?
+  status           String   @default("Draft") // Draft, Submitted, Approved, Ordered, Received, Closed
+  totalAmount      Float    @default(0)
+  gstAmount        Float    @default(0)
+  grandTotal       Float    @default(0)
+  remarks          String?
+  createdById      String?
+  approvedById     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  items            PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  description     String
+  quantity        Int      @default(1)
+  unitPrice       Float    @default(0)
+  totalPrice      Float    @default(0)
+  receivedQty     Int      @default(0)
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // Warning, Alert, Info, Success
+  title     String
+  message   String
+  userId    String?
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
