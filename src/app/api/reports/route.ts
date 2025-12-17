@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = assets.map(asset => ({
+                data = assets.map((asset: Record<string, unknown> & { department?: { name: string }; location?: { name: string }; purchaseDate?: Date }) => ({
                     ...asset,
                     departmentName: asset.department?.name || '-',
                     locationName: asset.location?.name || '-',
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = maintenance.map(record => ({
+                data = maintenance.map((record: Record<string, unknown> & { asset?: { name: string }; scheduledDate?: Date; completedDate?: Date }) => ({
                     ...record,
                     assetName: record.asset?.name || '-',
                     scheduledDate: record.scheduledDate?.toLocaleDateString() || '-',
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = users.map(user => ({
+                data = users.map((user: Record<string, unknown> & { firstName: string; lastName: string; department?: { name: string }; isActive: boolean }) => ({
                     ...user,
                     name: `${user.firstName} ${user.lastName}`,
                     departmentName: user.department?.name || '-',
