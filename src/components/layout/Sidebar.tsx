@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAssetStore } from '@/store/useAssetStore';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import Footer from './Footer';
 import {
     HomeIcon,
@@ -83,7 +84,8 @@ interface SidebarProps {
 
 export default function Sidebar({ children }: SidebarProps) {
     const pathname = usePathname();
-    const { sidebarOpen, toggleSidebar, darkMode, toggleDarkMode, notifications, currentUser } = useAssetStore();
+    const { sidebarOpen, toggleSidebar, notifications, currentUser } = useAssetStore();
+    const { theme, toggleTheme } = useTheme();
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -196,7 +198,7 @@ export default function Sidebar({ children }: SidebarProps) {
     );
 
     return (
-        <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950' : 'bg-gray-50'}`}>
+        <div className="min-h-screen">
             {/* Mobile sidebar backdrop */}
             {mobileOpen && (
                 <div
@@ -263,10 +265,11 @@ export default function Sidebar({ children }: SidebarProps) {
 
                             {/* Dark mode toggle */}
                             <button
-                                onClick={toggleDarkMode}
+                                onClick={toggleTheme}
                                 className="p-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+                                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                             >
-                                {darkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+                                {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
                             </button>
 
                             {/* Notifications */}
