@@ -52,11 +52,11 @@ export async function GET() {
             pendingMaintenanceTickets,
             totalMaintenanceCost: totalMaintenanceCost._sum.cost || 0,
             totalAssetValue: totalAssetValue._sum.currentValue || 0,
-            assetsByCategory: assetsByCategory.map(c => ({
+            assetsByCategory: assetsByCategory.map((c: { category: string; _count: { id: number } }) => ({
                 category: c.category,
                 count: c._count.id,
             })),
-            assetsByStatus: assetsByStatus.map(s => ({
+            assetsByStatus: assetsByStatus.map((s: { status: string; _count: { id: number } }) => ({
                 status: s.status,
                 count: s._count.id,
             })),
