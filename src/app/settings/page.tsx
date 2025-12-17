@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAssetStore } from '@/store/useAssetStore';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import Sidebar from '@/components/layout/Sidebar';
 import Card, { CardHeader, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -20,7 +21,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function SettingsPage() {
-    const { currentUser, darkMode, toggleDarkMode } = useAssetStore();
+    const { currentUser } = useAssetStore();
+    const { theme, toggleTheme } = useTheme();
     const [activeTab, setActiveTab] = useState('profile');
 
     const tabs = [
@@ -52,8 +54,8 @@ export default function SettingsPage() {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === tab.id
-                                                    ? 'bg-indigo-500/20 text-white'
-                                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                                ? 'bg-indigo-500/20 text-white'
+                                                : 'text-slate-400 hover:bg-white/5 hover:text-white'
                                                 }`}
                                         >
                                             <tab.icon className="w-5 h-5" />
@@ -295,8 +297,8 @@ export default function SettingsPage() {
                                             <label className="relative inline-flex items-center cursor-pointer">
                                                 <input
                                                     type="checkbox"
-                                                    checked={darkMode}
-                                                    onChange={toggleDarkMode}
+                                                    checked={theme === 'dark'}
+                                                    onChange={toggleTheme}
                                                     className="sr-only peer"
                                                 />
                                                 <div className="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>

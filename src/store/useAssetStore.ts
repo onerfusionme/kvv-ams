@@ -1,4 +1,4 @@
-// Zustand Store for Asset Management System
+// Zustand Store for Asset Management System - API Connected
 import { create } from 'zustand';
 import {
     Asset,
@@ -16,25 +16,29 @@ import {
     DisposalRecord,
     ComplianceRecord,
     CalibrationRecord,
-    PurchaseOrder,
 } from '@/types';
-import {
-    assets as mockAssets,
-    locations as mockLocations,
-    departments as mockDepartments,
-    users as mockUsers,
-    vendors as mockVendors,
-    contracts as mockContracts,
-    maintenanceRecords as mockMaintenanceRecords,
-    assetTransfers as mockAssetTransfers,
-    assetAudits as mockAssetAudits,
-    notifications as mockNotifications,
-    dashboardStats as mockDashboardStats,
-    softwareLicenses as mockSoftwareLicenses,
-    disposalRecords as mockDisposalRecords,
-    complianceRecords as mockComplianceRecords,
-    calibrationRecords as mockCalibrationRecords,
-} from '@/data/mockData';
+
+// Default empty dashboard stats (matching DashboardStats interface from types)
+const defaultDashboardStats: DashboardStats = {
+    totalAssets: 0,
+    totalUsers: 0,
+    activeAssets: 0,
+    assetsUnderMaintenance: 0,
+    assetsInRepair: 0,
+    idleAssets: 0,
+    condemnedAssets: 0,
+    disposedAssets: 0,
+    totalValue: 0,
+    depreciatedValue: 0,
+    maintenanceCostMTD: 0,
+    maintenanceCostYTD: 0,
+    warrantyExpiringSoon: 0,
+    amcExpiringSoon: 0,
+    calibrationDueSoon: 0,
+    pendingTransfers: 0,
+    pendingAudits: 0,
+    complianceIssues: 0,
+};
 
 interface AssetStore {
     // Data
@@ -54,15 +58,29 @@ interface AssetStore {
     complianceRecords: ComplianceRecord[];
     calibrationRecords: CalibrationRecord[];
 
+    // Loading states
+    isLoading: boolean;
+    error: string | null;
+
     // UI State
     currentUser: User | null;
     sidebarOpen: boolean;
-    darkMode: boolean;
+
+    // Fetch Actions (API)
+    fetchAssets: () => Promise<void>;
+    fetchUsers: () => Promise<void>;
+    fetchDepartments: () => Promise<void>;
+    fetchVendors: () => Promise<void>;
+    fetchDashboardStats: () => Promise<void>;
+    fetchAll: () => Promise<void>;
 
     // Actions
     setCurrentUser: (user: User | null) => void;
     toggleSidebar: () => void;
-    toggleDarkMode: () => void;
+    setAssets: (assets: Asset[]) => void;
+    setUsers: (users: User[]) => void;
+    setDepartments: (departments: Department[]) => void;
+    setVendors: (vendors: Vendor[]) => void;
 
     // Asset Actions
     addAsset: (asset: Asset) => void;
@@ -106,33 +124,109 @@ interface AssetStore {
     deleteDepartment: (id: string) => void;
 }
 
-export const useAssetStore = create<AssetStore>((set) => ({
-    // Initialize with mock data
-    assets: mockAssets,
-    locations: mockLocations,
-    departments: mockDepartments,
-    users: mockUsers,
-    vendors: mockVendors,
-    contracts: mockContracts,
-    maintenanceRecords: mockMaintenanceRecords,
-    assetTransfers: mockAssetTransfers,
-    assetAudits: mockAssetAudits,
-    notifications: mockNotifications,
-    dashboardStats: mockDashboardStats,
-    softwareLicenses: mockSoftwareLicenses,
-    disposalRecords: mockDisposalRecords,
-    complianceRecords: mockComplianceRecords,
-    calibrationRecords: mockCalibrationRecords,
+export const useAssetStore = create<AssetStore>((set, get) => ({
+    // Initialize with empty data
+    assets: [],
+    locations: [],
+    departments: [],
+    users: [],
+    vendors: [],
+    contracts: [],
+    maintenanceRecords: [],
+    assetTransfers: [],
+    assetAudits: [],
+    notifications: [],
+    dashboardStats: defaultDashboardStats,
+    softwareLicenses: [],
+    disposalRecords: [],
+    complianceRecords: [],
+    calibrationRecords: [],
+
+    // Loading states
+    isLoading: false,
+    error: null,
 
     // UI State
-    currentUser: mockUsers[0], // Default to super admin
+    currentUser: null,
     sidebarOpen: true,
-    darkMode: true,
 
-    // Actions
+    // Fetch Actions
+    fetchAssets: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const res = await fetch('/api/assets');
+            if (!res.ok) throw new Error('Failed to fetch assets');
+            const data = await res.json();
+            set({ assets: data, isLoading: false });
+        } catch (error) {
+            set({ error: (error as Error).message, isLoading: false });
+        }
+    },
+
+    fetchUsers: async () => {
+        try {
+            const res = await fetch('/api/users');
+            if (!res.ok) throw new Error('Failed to fetch users');
+            const data = await res.json();
+            set({ users: data });
+        } catch (error) {
+            console.error('Fetch users error:', error);
+        }
+    },
+
+    fetchDepartments: async () => {
+        try {
+            const res = await fetch('/api/departments');
+            if (!res.ok) throw new Error('Failed to fetch departments');
+            const data = await res.json();
+            set({ departments: data });
+        } catch (error) {
+            console.error('Fetch departments error:', error);
+        }
+    },
+
+    fetchVendors: async () => {
+        try {
+            const res = await fetch('/api/vendors');
+            if (!res.ok) throw new Error('Failed to fetch vendors');
+            const data = await res.json();
+            set({ vendors: data });
+        } catch (error) {
+            console.error('Fetch vendors error:', error);
+        }
+    },
+
+    fetchDashboardStats: async () => {
+        try {
+            const res = await fetch('/api/dashboard/stats');
+            if (!res.ok) throw new Error('Failed to fetch stats');
+            const data = await res.json();
+            set({ dashboardStats: { ...defaultDashboardStats, ...data } });
+        } catch (error) {
+            console.error('Fetch dashboard stats error:', error);
+        }
+    },
+
+    fetchAll: async () => {
+        set({ isLoading: true });
+        const { fetchAssets, fetchUsers, fetchDepartments, fetchVendors, fetchDashboardStats } = get();
+        await Promise.all([
+            fetchAssets(),
+            fetchUsers(),
+            fetchDepartments(),
+            fetchVendors(),
+            fetchDashboardStats(),
+        ]);
+        set({ isLoading: false });
+    },
+
+    // Setters
     setCurrentUser: (user) => set({ currentUser: user }),
     toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-    toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+    setAssets: (assets) => set({ assets }),
+    setUsers: (users) => set({ users }),
+    setDepartments: (departments) => set({ departments }),
+    setVendors: (vendors) => set({ vendors }),
 
     // Asset Actions
     addAsset: (asset) => set((state) => ({
@@ -158,11 +252,7 @@ export const useAssetStore = create<AssetStore>((set) => ({
 
     // User Actions
     addUser: (user) => set((state) => ({
-        users: [...state.users, user],
-        dashboardStats: {
-            ...state.dashboardStats,
-            totalUsers: state.dashboardStats.totalUsers + 1,
-        }
+        users: [...state.users, user]
     })),
 
     updateUser: (id, updates) => set((state) => ({
@@ -170,11 +260,7 @@ export const useAssetStore = create<AssetStore>((set) => ({
     })),
 
     deleteUser: (id) => set((state) => ({
-        users: state.users.filter((u) => u.id !== id),
-        dashboardStats: {
-            ...state.dashboardStats,
-            totalUsers: state.dashboardStats.totalUsers - 1,
-        }
+        users: state.users.filter((u) => u.id !== id)
     })),
 
     // Maintenance Actions
@@ -183,43 +269,33 @@ export const useAssetStore = create<AssetStore>((set) => ({
     })),
 
     updateMaintenanceRecord: (id, updates) => set((state) => ({
-        maintenanceRecords: state.maintenanceRecords.map((r) => r.id === id ? { ...r, ...updates } : r)
+        maintenanceRecords: state.maintenanceRecords.map((r) =>
+            r.id === id ? { ...r, ...updates } : r
+        )
     })),
 
     // Transfer Actions
     addTransfer: (transfer) => set((state) => ({
-        assetTransfers: [...state.assetTransfers, transfer],
-        dashboardStats: {
-            ...state.dashboardStats,
-            pendingTransfers: state.dashboardStats.pendingTransfers + 1,
-        }
+        assetTransfers: [...state.assetTransfers, transfer]
     })),
 
     approveTransfer: (id, approvedBy) => set((state) => ({
         assetTransfers: state.assetTransfers.map((t) =>
-            t.id === id
-                ? { ...t, approvalStatus: 'Approved' as const, approvedBy, approvedDate: new Date().toISOString().split('T')[0] }
-                : t
-        ),
-        dashboardStats: {
-            ...state.dashboardStats,
-            pendingTransfers: Math.max(0, state.dashboardStats.pendingTransfers - 1),
-        }
+            t.id === id ? { ...t, status: 'Completed' as const, approvedBy, approvedDate: new Date().toISOString() } : t
+        )
     })),
 
     rejectTransfer: (id) => set((state) => ({
         assetTransfers: state.assetTransfers.map((t) =>
-            t.id === id ? { ...t, approvalStatus: 'Rejected' as const } : t
-        ),
-        dashboardStats: {
-            ...state.dashboardStats,
-            pendingTransfers: Math.max(0, state.dashboardStats.pendingTransfers - 1),
-        }
+            t.id === id ? { ...t, status: 'Cancelled' as const } : t
+        )
     })),
 
     // Notification Actions
     markNotificationRead: (id) => set((state) => ({
-        notifications: state.notifications.map((n) => n.id === id ? { ...n, isRead: true } : n)
+        notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, isRead: true } : n
+        )
     })),
 
     markAllNotificationsRead: () => set((state) => ({

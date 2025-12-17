@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { useAssetStore } from '@/store/useAssetStore';
 import Sidebar from '@/components/layout/Sidebar';
 import StatCard from '@/components/ui/StatCard';
@@ -40,7 +42,12 @@ import {
 } from '@/data/mockData';
 
 export default function DashboardPage() {
-  const { dashboardStats, notifications, maintenanceRecords, assetTransfers, assets } = useAssetStore();
+  const { dashboardStats, notifications, maintenanceRecords, assetTransfers, assets, fetchDashboardStats, isLoading } = useAssetStore();
+
+  // Fetch dashboard data on mount
+  useEffect(() => {
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 10000000) {
