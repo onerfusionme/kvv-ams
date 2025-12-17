@@ -83,6 +83,7 @@ export default function DashboardPage() {
             trend="up"
             icon={<CubeIcon className="w-6 h-6 text-white" />}
             iconBg="from-indigo-500 to-purple-600"
+            href="/assets"
           />
           <StatCard
             title="Total Asset Value"
@@ -90,6 +91,7 @@ export default function DashboardPage() {
             subtitle={`Book Value: ${formatCurrency(dashboardStats.depreciatedValue)}`}
             icon={<CurrencyRupeeIcon className="w-6 h-6 text-white" />}
             iconBg="from-emerald-500 to-green-600"
+            href="/depreciation"
           />
           <StatCard
             title="Maintenance YTD"
@@ -99,6 +101,7 @@ export default function DashboardPage() {
             trend="down"
             icon={<WrenchScrewdriverIcon className="w-6 h-6 text-white" />}
             iconBg="from-amber-500 to-orange-600"
+            href="/maintenance"
           />
           <StatCard
             title="Pending Audits"
@@ -106,6 +109,7 @@ export default function DashboardPage() {
             subtitle={`${dashboardStats.complianceIssues} compliance issues`}
             icon={<ClipboardDocumentCheckIcon className="w-6 h-6 text-white" />}
             iconBg="from-rose-500 to-pink-600"
+            href="/audit"
           />
         </div>
 

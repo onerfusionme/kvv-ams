@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Link from 'next/link';
 
 interface StatCardProps {
     title: string;
@@ -11,6 +12,7 @@ interface StatCardProps {
     iconBg?: string;
     trend?: 'up' | 'down' | 'neutral';
     subtitle?: string;
+    href?: string;
 }
 
 export default function StatCard({
@@ -22,6 +24,7 @@ export default function StatCard({
     iconBg = 'from-indigo-500 to-purple-600',
     trend = 'neutral',
     subtitle,
+    href,
 }: StatCardProps) {
     const trendColors = {
         up: 'text-emerald-400',
@@ -43,8 +46,8 @@ export default function StatCard({
         neutral: null,
     };
 
-    return (
-        <div className="relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-white/10 p-6 overflow-hidden hover:border-indigo-500/30 transition-all duration-300 group">
+    const CardContent = () => (
+        <>
             {/* Background glow effect */}
             <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${iconBg} opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity`} />
 
@@ -71,6 +74,22 @@ export default function StatCard({
                     )}
                 </div>
             </div>
+        </>
+    );
+
+    const cardClasses = `relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-white/10 p-6 overflow-hidden hover:border-indigo-500/30 transition-all duration-300 group ${href ? 'cursor-pointer hover:scale-[1.02]' : ''}`;
+
+    if (href) {
+        return (
+            <Link href={href} className={cardClasses}>
+                <CardContent />
+            </Link>
+        );
+    }
+
+    return (
+        <div className={cardClasses}>
+            <CardContent />
         </div>
     );
 }
