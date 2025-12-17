@@ -6,7 +6,8 @@ import {
     validateAndTransform,
     assetMappings,
     userMappings,
-    generateTemplate
+    generateTemplate,
+    generateDocxTemplate
 } from '@/lib/imports'
 
 // POST /api/imports - Import data from CSV/Excel
@@ -147,8 +148,29 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'assets'
+    const format = searchParams.get('format') || 'csv'
 
     const mappings = type === 'users' ? userMappings : assetMappings
+
+    // Return DOCX format if requested
+    if (format === 'docx') {
+        try {
+            const blob = await generateDocxTemplate(mappings, type as 'assets' | 'users')
+            const buffer = await blob.arrayBuffer()
+
+            return new NextResponse(buffer, {
+                headers: {
+                    'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'Content-Disposition': `attachment; filename="${type}_import_template.docx"`,
+                },
+            })
+        } catch (error) {
+            console.error('DOCX generation error:', error)
+            return NextResponse.json({ error: 'Failed to generate DOCX template' }, { status: 500 })
+        }
+    }
+
+    // Default to CSV format
     const template = generateTemplate(mappings)
 
     return new NextResponse(template, {
@@ -158,3 +180,4 @@ export async function GET(request: NextRequest) {
         },
     })
 }
+

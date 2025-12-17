@@ -154,3 +154,105 @@ export function generateTemplate(mappings: ImportMapping[]): string {
     const headers = mappings.map(m => m.csvHeader)
     return headers.join(',') + '\n'
 }
+
+// Generate DOCX template using docx library
+export async function generateDocxTemplate(
+    mappings: ImportMapping[],
+    templateType: 'assets' | 'users'
+): Promise<Blob> {
+    const { Document, Paragraph, Table, TableRow, TableCell, HeadingLevel, TextRun, WidthType, BorderStyle, AlignmentType, Packer } = await import('docx')
+
+    const headers = mappings.map(m => m.csvHeader)
+    const requiredFields = mappings.filter(m => m.required).map(m => m.csvHeader)
+
+    // Create table header cells
+    const headerCells = headers.map(header =>
+        new TableCell({
+            children: [new Paragraph({
+                children: [new TextRun({ text: header, bold: true, size: 22 })],
+                alignment: AlignmentType.CENTER,
+            })],
+            shading: { fill: '4F46E5' },
+            margins: { top: 100, bottom: 100, left: 100, right: 100 },
+        })
+    )
+
+    // Create sample data row
+    const sampleCells = headers.map(header =>
+        new TableCell({
+            children: [new Paragraph({
+                children: [new TextRun({
+                    text: `<Enter ${header}>`,
+                    italics: true,
+                    color: '666666',
+                    size: 20
+                })],
+            })],
+            margins: { top: 50, bottom: 50, left: 100, right: 100 },
+        })
+    )
+
+    const doc = new Document({
+        sections: [{
+            properties: {
+                page: { size: { orientation: 'landscape' } },
+            },
+            children: [
+                new Paragraph({
+                    text: `${templateType === 'assets' ? 'Asset' : 'User'} Import Template`,
+                    heading: HeadingLevel.HEADING_1,
+                    alignment: AlignmentType.CENTER,
+                }),
+                new Paragraph({
+                    text: 'KVV Asset Management System',
+                    heading: HeadingLevel.HEADING_2,
+                    alignment: AlignmentType.CENTER,
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                    children: [
+                        new TextRun({ text: 'Instructions:', bold: true }),
+                    ],
+                }),
+                new Paragraph({
+                    text: '1. Fill in the data in the table below (replace sample values)',
+                }),
+                new Paragraph({
+                    text: '2. Required fields are marked with * in the header',
+                }),
+                new Paragraph({
+                    text: '3. Save as .xlsx or .csv file for import',
+                }),
+                new Paragraph({
+                    text: `4. Required fields: ${requiredFields.join(', ')}`,
+                }),
+                new Paragraph({ text: '' }),
+                new Table({
+                    rows: [
+                        new TableRow({ children: headerCells }),
+                        new TableRow({ children: sampleCells }),
+                    ],
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    borders: {
+                        top: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                        bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                        left: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                        right: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                        insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' },
+                    },
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                    children: [
+                        new TextRun({ text: 'Note: ', bold: true }),
+                        new TextRun({ text: 'Add more rows as needed. Each row represents one record to import.' }),
+                    ],
+                }),
+            ],
+        }],
+    })
+
+    return await Packer.toBlob(doc)
+}
+
