@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
             // Get department and location lookups
             const departments = await prisma.department.findMany()
             const locations = await prisma.location.findMany()
-            const deptMap = new Map(departments.map(d => [d.code, d.id]))
-            const locMap = new Map(locations.map(l => [l.code, l.id]))
+            const deptMap = new Map(departments.map((d: { code: string; id: string }) => [d.code, d.id]))
+            const locMap = new Map(locations.map((l: { code: string; id: string }) => [l.code, l.id]))
 
             for (let i = 0; i < result.data.length; i++) {
                 const asset = result.data[i] as Record<string, unknown>
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
             }
         } else if (type === 'users') {
             const departments = await prisma.department.findMany()
-            const deptMap = new Map(departments.map(d => [d.code, d.id]))
+            const deptMap = new Map(departments.map((d: { code: string; id: string }) => [d.code, d.id]))
 
             for (let i = 0; i < result.data.length; i++) {
                 const user = result.data[i] as Record<string, unknown>
