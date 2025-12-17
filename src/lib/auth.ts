@@ -87,5 +87,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session: {
         strategy: 'jwt',
     },
+    trustHost: true,
+    debug: process.env.NODE_ENV === 'development',
     secret: process.env.AUTH_SECRET || 'krishna-asset-management-secret-key-2024',
 })
