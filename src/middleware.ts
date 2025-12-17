@@ -1,41 +1,35 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getToken } from 'next-auth/jwt'
 
-export async function middleware(request: NextRequest) {
-    const token = await getToken({
-        req: request,
-        secret: process.env.AUTH_SECRET || 'krishna-asset-management-secret-key-2024'
-    })
-    const isLoggedIn = !!token
-    const isLoginPage = request.nextUrl.pathname === '/login'
-    const isApiRoute = request.nextUrl.pathname.startsWith('/api')
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth')
-    const isStaticRoute = request.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2)$/)
+export function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl
 
-    // Allow static files
-    if (isStaticRoute) {
+    // Skip middleware for static files and API routes
+    if (
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api') ||
+        pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2)$/)
+    ) {
         return NextResponse.next()
     }
 
-    // Allow auth routes to pass through
-    if (isAuthRoute) {
-        return NextResponse.next()
-    }
+    // Check for auth session cookie (NextAuth v5 uses different cookie names)
+    const hasSession =
+        request.cookies.has('authjs.session-token') ||
+        request.cookies.has('__Secure-authjs.session-token') ||
+        request.cookies.has('next-auth.session-token') ||
+        request.cookies.has('__Secure-next-auth.session-token')
 
-    // If logged in and trying to access login page, redirect to home
-    if (isLoggedIn && isLoginPage) {
-        return NextResponse.redirect(new URL('/', request.nextUrl))
+    const isLoginPage = pathname === '/login'
+
+    // If logged in and on login page, redirect to home
+    if (hasSession && isLoginPage) {
+        return NextResponse.redirect(new URL('/', request.url))
     }
 
     // If not logged in and not on login page, redirect to login
-    if (!isLoggedIn && !isLoginPage && !isApiRoute) {
-        return NextResponse.redirect(new URL('/login', request.nextUrl))
-    }
-
-    // Protect API routes (except auth routes)
-    if (!isLoggedIn && isApiRoute && !isAuthRoute) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!hasSession && !isLoginPage) {
+        return NextResponse.redirect(new URL('/login', request.url))
     }
 
     return NextResponse.next()
@@ -43,7 +37,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Match all routes except static files, _next, and public assets
-        '/((?!_next/static|_next/image|favicon.ico).*)',
+        /*
+         * Match all request paths except:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - api routes (handled separately)
+         */
+        '/((?!_next/static|_next/image|favicon.ico|api).*)',
     ],
 }
