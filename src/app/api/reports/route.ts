@@ -9,6 +9,29 @@ import {
     ReportColumn
 } from '@/lib/reports'
 
+// Type definitions for Prisma results
+interface AssetWithRelations {
+    department?: { name: string } | null;
+    location?: { name: string } | null;
+    purchaseDate?: Date | null;
+    [key: string]: unknown;
+}
+
+interface MaintenanceWithRelations {
+    asset?: { name: string } | null;
+    scheduledDate?: Date | null;
+    completedDate?: Date | null;
+    [key: string]: unknown;
+}
+
+interface UserWithRelations {
+    firstName: string;
+    lastName: string;
+    department?: { name: string } | null;
+    isActive: boolean;
+    [key: string]: unknown;
+}
+
 // GET /api/reports - Generate report
 export async function GET(request: NextRequest) {
     try {
@@ -29,19 +52,12 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = assets.map((asset) => {
-                    const a = asset as unknown as {
-                        department?: { name: string };
-                        location?: { name: string };
-                        purchaseDate?: Date;
-                    } & Record<string, unknown>
-                    return {
-                        ...a,
-                        departmentName: a.department?.name || '-',
-                        locationName: a.location?.name || '-',
-                        purchaseDate: a.purchaseDate?.toLocaleDateString() || '-',
-                    }
-                })
+                data = (assets as unknown as AssetWithRelations[]).map((asset: AssetWithRelations) => ({
+                    ...asset,
+                    departmentName: asset.department?.name || '-',
+                    locationName: asset.location?.name || '-',
+                    purchaseDate: asset.purchaseDate?.toLocaleDateString() || '-',
+                }))
                 columns = assetReportColumns
                 title = 'Asset Inventory Report'
                 break
@@ -54,19 +70,12 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = maintenance.map((record) => {
-                    const r = record as unknown as {
-                        asset?: { name: string };
-                        scheduledDate?: Date;
-                        completedDate?: Date;
-                    } & Record<string, unknown>
-                    return {
-                        ...r,
-                        assetName: r.asset?.name || '-',
-                        scheduledDate: r.scheduledDate?.toLocaleDateString() || '-',
-                        completedDate: r.completedDate?.toLocaleDateString() || '-',
-                    }
-                })
+                data = (maintenance as unknown as MaintenanceWithRelations[]).map((record: MaintenanceWithRelations) => ({
+                    ...record,
+                    assetName: record.asset?.name || '-',
+                    scheduledDate: record.scheduledDate?.toLocaleDateString() || '-',
+                    completedDate: record.completedDate?.toLocaleDateString() || '-',
+                }))
                 columns = maintenanceReportColumns
                 title = 'Maintenance Records Report'
                 break
@@ -79,20 +88,12 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = users.map((user) => {
-                    const u = user as unknown as {
-                        firstName: string;
-                        lastName: string;
-                        department?: { name: string };
-                        isActive: boolean;
-                    } & Record<string, unknown>
-                    return {
-                        ...u,
-                        name: `${u.firstName} ${u.lastName}`,
-                        departmentName: u.department?.name || '-',
-                        isActive: u.isActive ? 'Active' : 'Inactive',
-                    }
-                })
+                data = (users as unknown as UserWithRelations[]).map((user: UserWithRelations) => ({
+                    ...user,
+                    name: `${user.firstName} ${user.lastName}`,
+                    departmentName: user.department?.name || '-',
+                    isActive: user.isActive ? 'Active' : 'Inactive',
+                }))
                 columns = userReportColumns
                 title = 'User Directory Report'
                 break
