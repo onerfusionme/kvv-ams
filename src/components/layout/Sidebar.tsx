@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { useAssetStore } from '@/store/useAssetStore';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import Footer from './Footer';
@@ -30,8 +31,9 @@ import {
     SunIcon,
     MoonIcon,
     ChevronDownIcon,
+    ArrowRightOnRectangleIcon,
+    UserCircleIcon,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
 
 interface NavItem {
     name: string;
@@ -88,6 +90,7 @@ export default function Sidebar({ children }: SidebarProps) {
     const { theme, toggleTheme } = useTheme();
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -287,10 +290,49 @@ export default function Sidebar({ children }: SidebarProps) {
 
                             {/* User menu */}
                             {currentUser && (
-                                <div className="flex items-center gap-2 pl-3 border-l border-white/10">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
-                                        {currentUser.firstName[0]}{currentUser.lastName[0]}
-                                    </div>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                        className="flex items-center gap-2 pl-3 border-l border-white/10 hover:opacity-80 transition-opacity"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                                            {currentUser.firstName[0]}{currentUser.lastName[0]}
+                                        </div>
+                                        <ChevronDownIcon className={`w-4 h-4 text-slate-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {/* Dropdown menu */}
+                                    {userMenuOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-48 bg-slate-800 border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                                            <div className="p-3 border-b border-white/10">
+                                                <p className="text-sm font-medium text-white">{currentUser.firstName} {currentUser.lastName}</p>
+                                                <p className="text-xs text-slate-400">{currentUser.email}</p>
+                                            </div>
+                                            <Link
+                                                href="/profile"
+                                                onClick={() => setUserMenuOpen(false)}
+                                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/5 transition-colors"
+                                            >
+                                                <UserCircleIcon className="w-4 h-4" />
+                                                My Profile
+                                            </Link>
+                                            <Link
+                                                href="/settings"
+                                                onClick={() => setUserMenuOpen(false)}
+                                                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-white/5 transition-colors"
+                                            >
+                                                <Cog6ToothIcon className="w-4 h-4" />
+                                                Settings
+                                            </Link>
+                                            <button
+                                                onClick={() => signOut({ callbackUrl: '/login' })}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                            >
+                                                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                                                Logout
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
