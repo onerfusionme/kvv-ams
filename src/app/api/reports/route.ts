@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         let title = ''
 
         switch (type) {
-            case 'assets':
+            case 'assets': {
                 const assets = await prisma.asset.findMany({
                     include: {
                         department: true,
@@ -29,49 +29,74 @@ export async function GET(request: NextRequest) {
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = assets.map((asset: Record<string, unknown> & { department?: { name: string }; location?: { name: string }; purchaseDate?: Date }) => ({
-                    ...asset,
-                    departmentName: asset.department?.name || '-',
-                    locationName: asset.location?.name || '-',
-                    purchaseDate: asset.purchaseDate?.toLocaleDateString() || '-',
-                }))
+                data = assets.map((asset) => {
+                    const a = asset as unknown as {
+                        department?: { name: string };
+                        location?: { name: string };
+                        purchaseDate?: Date;
+                    } & Record<string, unknown>
+                    return {
+                        ...a,
+                        departmentName: a.department?.name || '-',
+                        locationName: a.location?.name || '-',
+                        purchaseDate: a.purchaseDate?.toLocaleDateString() || '-',
+                    }
+                })
                 columns = assetReportColumns
                 title = 'Asset Inventory Report'
                 break
+            }
 
-            case 'maintenance':
+            case 'maintenance': {
                 const maintenance = await prisma.maintenanceRecord.findMany({
                     include: {
                         asset: true,
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = maintenance.map((record: Record<string, unknown> & { asset?: { name: string }; scheduledDate?: Date; completedDate?: Date }) => ({
-                    ...record,
-                    assetName: record.asset?.name || '-',
-                    scheduledDate: record.scheduledDate?.toLocaleDateString() || '-',
-                    completedDate: record.completedDate?.toLocaleDateString() || '-',
-                }))
+                data = maintenance.map((record) => {
+                    const r = record as unknown as {
+                        asset?: { name: string };
+                        scheduledDate?: Date;
+                        completedDate?: Date;
+                    } & Record<string, unknown>
+                    return {
+                        ...r,
+                        assetName: r.asset?.name || '-',
+                        scheduledDate: r.scheduledDate?.toLocaleDateString() || '-',
+                        completedDate: r.completedDate?.toLocaleDateString() || '-',
+                    }
+                })
                 columns = maintenanceReportColumns
                 title = 'Maintenance Records Report'
                 break
+            }
 
-            case 'users':
+            case 'users': {
                 const users = await prisma.user.findMany({
                     include: {
                         department: true,
                     },
                     orderBy: { createdAt: 'desc' },
                 })
-                data = users.map((user: Record<string, unknown> & { firstName: string; lastName: string; department?: { name: string }; isActive: boolean }) => ({
-                    ...user,
-                    name: `${user.firstName} ${user.lastName}`,
-                    departmentName: user.department?.name || '-',
-                    isActive: user.isActive ? 'Active' : 'Inactive',
-                }))
+                data = users.map((user) => {
+                    const u = user as unknown as {
+                        firstName: string;
+                        lastName: string;
+                        department?: { name: string };
+                        isActive: boolean;
+                    } & Record<string, unknown>
+                    return {
+                        ...u,
+                        name: `${u.firstName} ${u.lastName}`,
+                        departmentName: u.department?.name || '-',
+                        isActive: u.isActive ? 'Active' : 'Inactive',
+                    }
+                })
                 columns = userReportColumns
                 title = 'User Directory Report'
                 break
+            }
 
             default:
                 return NextResponse.json({ error: 'Invalid report type' }, { status: 400 })
