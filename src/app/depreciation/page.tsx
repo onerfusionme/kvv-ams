@@ -80,7 +80,7 @@ export default function DepreciationPage() {
     // Year-wise depreciation projection
     const yearProjection = useMemo(() => {
         const currentYear = new Date().getFullYear();
-        const projection = [];
+        const projection: { year: string; value: number; depreciation: number }[] = [];
         let currentValue = stats.totalCurrent;
         const avgRate = parseFloat(stats.avgDepreciationRate) / 100;
 
