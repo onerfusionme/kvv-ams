@@ -1,5 +1,6 @@
 'use client'
 
+// Build version: v2 - Fixed SSR context issue
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
 type Theme = 'dark' | 'light'
