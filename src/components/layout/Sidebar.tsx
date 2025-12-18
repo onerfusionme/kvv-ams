@@ -40,14 +40,21 @@ interface NavItem {
     href: string;
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     children?: { name: string; href: string }[];
+    roles?: string[]; // Which roles can see this item. Empty/undefined = all roles
 }
 
+// Role hierarchy for access control
+const ADMIN_ROLES = ['Super Admin'];
+const MANAGER_ROLES = ['Super Admin', 'Asset Manager', 'College Admin', 'Hospital Admin'];
+const ALL_ROLES = ['Super Admin', 'Asset Manager', 'College Admin', 'Hospital Admin', 'Dept Head', 'User'];
+
 const navigation: NavItem[] = [
-    { name: 'Dashboard', href: '/', icon: HomeIcon },
+    { name: 'Dashboard', href: '/', icon: HomeIcon }, // All users
     {
         name: 'Asset Master',
         href: '/assets',
         icon: CubeIcon,
+        roles: MANAGER_ROLES,
         children: [
             { name: 'All Assets', href: '/assets' },
             { name: 'Add Asset', href: '/assets/new' },
@@ -58,26 +65,27 @@ const navigation: NavItem[] = [
         name: 'Procurement',
         href: '/procurement',
         icon: TruckIcon,
+        roles: MANAGER_ROLES,
         children: [
             { name: 'Purchase Orders', href: '/procurement/orders' },
             { name: 'Vendors', href: '/procurement/vendors' },
         ]
     },
-    { name: 'Allocation', href: '/allocation', icon: ArrowsRightLeftIcon },
-    { name: 'Locations', href: '/locations', icon: BuildingOfficeIcon },
-    { name: 'Departments', href: '/departments', icon: BuildingOfficeIcon },
-    { name: 'Maintenance', href: '/maintenance', icon: WrenchScrewdriverIcon },
-    { name: 'Contracts', href: '/contracts', icon: DocumentTextIcon },
-    { name: 'Audit', href: '/audit', icon: ClipboardDocumentCheckIcon },
-    { name: 'Depreciation', href: '/depreciation', icon: CurrencyDollarIcon },
-    { name: 'Disposal', href: '/disposal', icon: ArchiveBoxXMarkIcon },
-    { name: 'Compliance', href: '/compliance', icon: ShieldCheckIcon },
-    { name: 'IT Assets', href: '/it-assets', icon: ComputerDesktopIcon },
-    { name: 'Biomedical', href: '/biomedical', icon: BeakerIcon },
-    { name: 'Users', href: '/users', icon: UserGroupIcon },
-    { name: 'Reports', href: '/reports', icon: ChartBarIcon },
-    { name: 'Notifications', href: '/notifications', icon: BellIcon },
-    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
+    { name: 'Allocation', href: '/allocation', icon: ArrowsRightLeftIcon, roles: MANAGER_ROLES },
+    { name: 'Locations', href: '/locations', icon: BuildingOfficeIcon, roles: ADMIN_ROLES },
+    { name: 'Departments', href: '/departments', icon: BuildingOfficeIcon, roles: ADMIN_ROLES },
+    { name: 'Maintenance', href: '/maintenance', icon: WrenchScrewdriverIcon, roles: MANAGER_ROLES },
+    { name: 'Contracts', href: '/contracts', icon: DocumentTextIcon, roles: MANAGER_ROLES },
+    { name: 'Audit', href: '/audit', icon: ClipboardDocumentCheckIcon, roles: MANAGER_ROLES },
+    { name: 'Depreciation', href: '/depreciation', icon: CurrencyDollarIcon, roles: MANAGER_ROLES },
+    { name: 'Disposal', href: '/disposal', icon: ArchiveBoxXMarkIcon, roles: ADMIN_ROLES },
+    { name: 'Compliance', href: '/compliance', icon: ShieldCheckIcon, roles: ADMIN_ROLES },
+    { name: 'IT Assets', href: '/it-assets', icon: ComputerDesktopIcon, roles: MANAGER_ROLES },
+    { name: 'Biomedical', href: '/biomedical', icon: BeakerIcon, roles: MANAGER_ROLES },
+    { name: 'Users', href: '/users', icon: UserGroupIcon, roles: ADMIN_ROLES },
+    { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: MANAGER_ROLES },
+    { name: 'Notifications', href: '/notifications', icon: BellIcon }, // All users
+    { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, roles: ADMIN_ROLES },
 ];
 
 interface SidebarProps {
@@ -93,6 +101,17 @@ export default function Sidebar({ children }: SidebarProps) {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+    // Get user role from currentUser or session
+    const userRole = currentUser?.role || 'User';
+
+    // Filter navigation based on user role
+    const filteredNavigation = navigation.filter((item) => {
+        // If no roles specified, show to everyone
+        if (!item.roles || item.roles.length === 0) return true;
+        // Otherwise, check if user's role is in allowed roles
+        return item.roles.includes(userRole);
+    });
 
     const toggleExpanded = (name: string) => {
         setExpandedItems((prev) =>
@@ -124,7 +143,7 @@ export default function Sidebar({ children }: SidebarProps) {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin scrollbar-thumb-slate-700">
                 <ul className="space-y-1">
-                    {navigation.map((item) => (
+                    {filteredNavigation.map((item) => (
                         <li key={item.name}>
                             {item.children ? (
                                 <div>

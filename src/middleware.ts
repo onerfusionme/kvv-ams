@@ -21,14 +21,16 @@ export function middleware(request: NextRequest) {
         request.cookies.has('__Secure-next-auth.session-token')
 
     const isLoginPage = pathname === '/login'
+    const isSetupPage = pathname === '/setup'
+    const isPublicPage = isLoginPage || isSetupPage
 
     // If logged in and on login page, redirect to home
     if (hasSession && isLoginPage) {
         return NextResponse.redirect(new URL('/', request.url))
     }
 
-    // If not logged in and not on login page, redirect to login
-    if (!hasSession && !isLoginPage) {
+    // If not logged in and not on public page, redirect to login
+    if (!hasSession && !isPublicPage) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
