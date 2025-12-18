@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { use } from 'react';
@@ -326,12 +328,12 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
                             </CardHeader>
                             <CardContent>
                                 <div className={`p-4 rounded-xl border ${warrantyDays <= 0 ? 'bg-red-500/10 border-red-500/20' :
-                                        warrantyDays <= 90 ? 'bg-amber-500/10 border-amber-500/20' :
-                                            'bg-emerald-500/10 border-emerald-500/20'
+                                    warrantyDays <= 90 ? 'bg-amber-500/10 border-amber-500/20' :
+                                        'bg-emerald-500/10 border-emerald-500/20'
                                     }`}>
                                     <p className={`text-2xl font-bold ${warrantyDays <= 0 ? 'text-red-400' :
-                                            warrantyDays <= 90 ? 'text-amber-400' :
-                                                'text-emerald-400'
+                                        warrantyDays <= 90 ? 'text-amber-400' :
+                                            'text-emerald-400'
                                         }`}>
                                         {warrantyDays <= 0 ? 'Expired' : `${warrantyDays} days`}
                                     </p>

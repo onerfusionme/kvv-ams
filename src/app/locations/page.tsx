@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState } from 'react';
@@ -71,8 +73,8 @@ export default function LocationsPage() {
                 <div key={location.id}>
                     <div
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${selectedLocation === location.id
-                                ? 'bg-indigo-500/20 border border-indigo-500/30'
-                                : 'hover:bg-white/5'
+                            ? 'bg-indigo-500/20 border border-indigo-500/30'
+                            : 'hover:bg-white/5'
                             }`}
                         style={{ marginLeft: `${level * 24}px` }}
                         onClick={() => setSelectedLocation(location.id)}

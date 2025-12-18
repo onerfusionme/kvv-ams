@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState } from 'react';
@@ -148,10 +150,10 @@ export default function NewAssetPage() {
                                 <div className="relative flex flex-col items-center flex-1">
                                     <div
                                         className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${step > s.id
-                                                ? 'bg-emerald-500 text-white'
-                                                : step === s.id
-                                                    ? 'bg-indigo-500 text-white'
-                                                    : 'bg-slate-700 text-slate-400'
+                                            ? 'bg-emerald-500 text-white'
+                                            : step === s.id
+                                                ? 'bg-indigo-500 text-white'
+                                                : 'bg-slate-700 text-slate-400'
                                             }`}
                                     >
                                         {step > s.id ? <CheckIcon className="w-5 h-5" /> : s.id}

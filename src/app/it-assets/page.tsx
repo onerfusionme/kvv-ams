@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState } from 'react';
@@ -70,9 +72,9 @@ export default function ITAssetsPage() {
             render: (asset) => (
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${asset.subCategory === 'Desktop' ? 'bg-blue-500/20' :
-                            asset.subCategory === 'Laptop' ? 'bg-purple-500/20' :
-                                asset.subCategory === 'Server' ? 'bg-indigo-500/20' :
-                                    'bg-emerald-500/20'
+                        asset.subCategory === 'Laptop' ? 'bg-purple-500/20' :
+                            asset.subCategory === 'Server' ? 'bg-indigo-500/20' :
+                                'bg-emerald-500/20'
                         }`}>
                         {asset.subCategory === 'Desktop' ? <ComputerDesktopIcon className="w-5 h-5 text-blue-400" /> :
                             asset.subCategory === 'Server' ? <ServerIcon className="w-5 h-5 text-indigo-400" /> :
@@ -185,8 +187,8 @@ export default function ITAssetsPage() {
                     <p className="text-white">{license.expiryDate || 'Never'}</p>
                     {license.expiryDate && (
                         <p className={`text-xs ${new Date(license.expiryDate) < new Date() ? 'text-red-400' :
-                                new Date(license.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) ? 'text-amber-400' :
-                                    'text-slate-400'
+                            new Date(license.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) ? 'text-amber-400' :
+                                'text-slate-400'
                             }`}>
                             {new Date(license.expiryDate) < new Date() ? 'Expired' : `${Math.ceil((new Date(license.expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days left`}
                         </p>
@@ -367,8 +369,8 @@ export default function ITAssetsPage() {
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id as typeof activeTab); setCurrentPage(1); }}
                             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                                    ? 'border-indigo-500 text-white'
-                                    : 'border-transparent text-slate-400 hover:text-white'
+                                ? 'border-indigo-500 text-white'
+                                : 'border-transparent text-slate-400 hover:text-white'
                                 }`}
                         >
                             <tab.icon className="w-4 h-4" />

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -548,8 +550,8 @@ export default function AssetsPage() {
 
                         {importResult && (
                             <div className={`p-4 rounded-xl border ${importResult.success
-                                    ? 'bg-emerald-500/10 border-emerald-500/20'
-                                    : 'bg-amber-500/10 border-amber-500/20'
+                                ? 'bg-emerald-500/10 border-emerald-500/20'
+                                : 'bg-amber-500/10 border-amber-500/20'
                                 }`}>
                                 <p className={`font-medium ${importResult.success ? 'text-emerald-400' : 'text-amber-400'
                                     }`}>

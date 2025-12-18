@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -77,12 +79,12 @@ export default function ContractsPage() {
             render: (contract) => (
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${contract.type === 'AMC' ? 'bg-indigo-500/20' :
-                            contract.type === 'CMC' ? 'bg-purple-500/20' :
-                                'bg-emerald-500/20'
+                        contract.type === 'CMC' ? 'bg-purple-500/20' :
+                            'bg-emerald-500/20'
                         }`}>
                         <DocumentTextIcon className={`w-5 h-5 ${contract.type === 'AMC' ? 'text-indigo-400' :
-                                contract.type === 'CMC' ? 'text-purple-400' :
-                                    'text-emerald-400'
+                            contract.type === 'CMC' ? 'text-purple-400' :
+                                'text-emerald-400'
                             }`} />
                     </div>
                     <div>

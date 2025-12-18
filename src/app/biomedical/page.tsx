@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -346,8 +348,8 @@ export default function BiomedicalPage() {
                                     <div>
                                         <p className="text-xs text-slate-400">Risk Category</p>
                                         <p className={`text-sm font-medium ${equipment.riskCategory === 'High' ? 'text-red-400' :
-                                                equipment.riskCategory === 'Medium' ? 'text-amber-400' :
-                                                    'text-emerald-400'
+                                            equipment.riskCategory === 'Medium' ? 'text-amber-400' :
+                                                'text-emerald-400'
                                             }`}>{equipment.riskCategory}</p>
                                     </div>
                                     <div>
@@ -424,8 +426,8 @@ export default function BiomedicalPage() {
                                     <p className="text-white font-medium mt-1">{selectedEquipment.lastCalibration}</p>
                                     <p className="text-xs text-slate-400 mt-2">Next Calibration</p>
                                     <p className={`font-medium mt-1 ${selectedEquipment.calibrationStatus === 'Overdue' ? 'text-red-400' :
-                                            selectedEquipment.calibrationStatus === 'Due' ? 'text-amber-400' :
-                                                'text-emerald-400'
+                                        selectedEquipment.calibrationStatus === 'Due' ? 'text-amber-400' :
+                                            'text-emerald-400'
                                         }`}>{selectedEquipment.nextCalibration}</p>
                                 </div>
                                 <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">

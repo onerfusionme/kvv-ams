@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -73,12 +75,12 @@ export default function AuditPage() {
             render: (audit) => (
                 <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${audit.status === 'Completed' ? 'bg-emerald-500/20' :
-                            audit.status === 'In-Progress' ? 'bg-amber-500/20' :
-                                'bg-blue-500/20'
+                        audit.status === 'In-Progress' ? 'bg-amber-500/20' :
+                            'bg-blue-500/20'
                         }`}>
                         <ClipboardDocumentCheckIcon className={`w-5 h-5 ${audit.status === 'Completed' ? 'text-emerald-400' :
-                                audit.status === 'In-Progress' ? 'text-amber-400' :
-                                    'text-blue-400'
+                            audit.status === 'In-Progress' ? 'text-amber-400' :
+                                'text-blue-400'
                             }`} />
                     </div>
                     <div>

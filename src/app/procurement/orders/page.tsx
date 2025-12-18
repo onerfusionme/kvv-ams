@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { useState } from 'react';
@@ -263,9 +265,9 @@ export default function PurchaseOrdersPage() {
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${po.status === 'Approved' ? 'bg-emerald-500/20' :
-                                                po.status === 'Pending' ? 'bg-amber-500/20' :
-                                                    po.status === 'Received' ? 'bg-blue-500/20' :
-                                                        'bg-slate-500/20'
+                                            po.status === 'Pending' ? 'bg-amber-500/20' :
+                                                po.status === 'Received' ? 'bg-blue-500/20' :
+                                                    'bg-slate-500/20'
                                             }`}>
                                             {getStatusIcon(po.status)}
                                         </div>
